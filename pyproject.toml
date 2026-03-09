@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "indexio"
+version = "0.1.0"
+description = "Lightweight semantic indexing and retrieval for project knowledge sources"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Arash" }]
+license = { text = "MIT" }
+keywords = ["rag", "embeddings", "chromadb", "semantic-search", "indexing"]
+dependencies = [
+    "pyyaml>=6",
+    "langchain-text-splitters>=0.3",
+    "langchain-chroma>=0.2",
+    "langchain-huggingface>=0.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "twine", "build"]
+
+[project.scripts]
+indexio = "indexio.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
