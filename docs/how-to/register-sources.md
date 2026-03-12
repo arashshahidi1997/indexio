@@ -8,7 +8,7 @@ Ecosystem packages (codio, biblio, notio) register their own sources in a shared
 from indexio import sync_owned_sources
 
 result = sync_owned_sources(
-    config_path="infra/indexio/config.yaml",
+    config_path=".indexio/config.yaml",
     root="/path/to/project",
     owned_source_ids=["my-notes", "my-catalog"],
     sources=[
@@ -37,7 +37,7 @@ Pass `force_init=True` to always start from the default template:
 
 ```python
 sync_owned_sources(
-    config_path="infra/indexio/config.yaml",
+    config_path=".indexio/config.yaml",
     root=".",
     owned_source_ids=["my-src"],
     sources=[{"id": "my-src", "corpus": "c", "glob": "*.md"}],

@@ -11,19 +11,19 @@ pip install indexio[chat]
 ## Start the server
 
 ```bash
-indexio serve --config infra/indexio/config.yaml --root .
+indexio serve --config .indexio/config.yaml --root .
 ```
 
 ## Custom LLM backend
 
 ```bash
 # OpenAI-compatible API
-indexio serve --config infra/indexio/config.yaml --root . \
+indexio serve --config .indexio/config.yaml --root . \
     --llm-backend openai --llm-model gpt-4 \
     --llm-base-url https://api.openai.com
 
 # Local Ollama (default)
-indexio serve --config infra/indexio/config.yaml --root . \
+indexio serve --config .indexio/config.yaml --root . \
     --llm-backend ollama --llm-model llama3
 ```
 

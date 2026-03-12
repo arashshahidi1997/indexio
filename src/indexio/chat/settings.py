@@ -25,7 +25,7 @@ class ChatSettings(BaseSettings):
     cors_origins: list[str] = ["*"]
 
     # indexio config
-    config_path: str = "infra/indexio/config.yaml"
+    config_path: str = ".indexio/config.yaml"
     root: str = "."
     store: str | None = None
     corpus: str | None = None

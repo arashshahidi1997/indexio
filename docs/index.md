@@ -22,9 +22,8 @@ Indexes document sources (markdown, code, YAML, etc.) into a ChromaDB vector sto
 
 ### What is not yet done
 
-- No tests written yet
+- Test coverage is still partial; chat and end-to-end integration coverage need expansion
 - Not published to PyPI
-- No docs site (mkdocs not configured)
 - Embedding model is hardcoded to `all-MiniLM-L6-v2`; no pluggable embedding backend yet
 - No incremental/delta indexing (modified-file detection)
 - No support for binary or PDF sources
@@ -38,7 +37,6 @@ Indexes document sources (markdown, code, YAML, etc.) into a ChromaDB vector sto
 - [ ] Write a test suite (`tests/`) covering config parsing, build pipeline (with a fixture directory), and query round-trip
 - [ ] Write tests for the chat pipeline and endpoint
 - [ ] Publish to PyPI as `indexio 0.1.0`
-- [ ] Set up mkdocs site (material theme) with API reference and usage guide
 - [ ] Add `indexio status --json` output for machine consumption
 - [ ] Integrate the chatbot widget into biblio, codio, and notio docs sites
 

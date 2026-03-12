@@ -1,6 +1,6 @@
 # Configuration Reference
 
-indexio uses a YAML config file. The default location is `infra/indexio/config.yaml`.
+indexio uses a YAML config file. The default location is `.indexio/config.yaml`.
 
 ## Full schema
 

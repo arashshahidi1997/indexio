@@ -6,7 +6,7 @@
 indexio init-config --root /path/to/project
 ```
 
-This creates `infra/indexio/config.yaml` with sensible defaults.
+This creates `.indexio/config.yaml` with sensible defaults.
 
 ## Custom output path
 

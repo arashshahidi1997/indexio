@@ -7,7 +7,7 @@ Write a starter config into a project.
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--root` | `.` | Project root |
-| `--output` | `infra/indexio/config.yaml` | Output path relative to root |
+| `--output` | `.indexio/config.yaml` | Output path relative to root |
 | `--force` | | Overwrite an existing file |
 
 ## `indexio build`

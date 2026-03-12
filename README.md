@@ -16,16 +16,16 @@ make dev
 
 ```bash
 # Write a starter config into your project
-indexio init-config --root . --output infra/indexio/config.yaml
+indexio init-config --root . --output .indexio/config.yaml
 
 # Build the index
-indexio build --config infra/indexio/config.yaml --root .
+indexio build --config .indexio/config.yaml --root .
 
 # Query
-indexio query --config infra/indexio/config.yaml --root . "how does authentication work"
+indexio query --config .indexio/config.yaml --root . "how does authentication work"
 
 # Show store status
-indexio status --config infra/indexio/config.yaml --root .
+indexio status --config .indexio/config.yaml --root .
 ```
 
 ## Chat server
@@ -37,10 +37,10 @@ A built-in RAG chatbot that any projio subsystem can embed in its docs.
 pip install indexio[chat]
 
 # Start the chat server
-indexio serve --config infra/indexio/config.yaml --root .
+indexio serve --config .indexio/config.yaml --root .
 
 # With a custom LLM
-indexio serve --config infra/indexio/config.yaml --root . \
+indexio serve --config .indexio/config.yaml --root . \
     --llm-backend openai --llm-model gpt-4 --llm-base-url https://api.openai.com
 ```
 
@@ -65,7 +65,7 @@ Settings are also configurable via `INDEXIO_CHAT_*` environment variables.
 ```python
 from indexio import load_indexio_config, build_index, query_index
 
-cfg = load_indexio_config("infra/indexio/config.yaml", root="/path/to/project")
-build_index(config_path="infra/indexio/config.yaml", root="/path/to/project")
-results = query_index(config_path="infra/indexio/config.yaml", root="/path/to/project", query="embeddings")
+cfg = load_indexio_config(".indexio/config.yaml", root="/path/to/project")
+build_index(config_path=".indexio/config.yaml", root="/path/to/project")
+results = query_index(config_path=".indexio/config.yaml", root="/path/to/project", query="embeddings")
 ```

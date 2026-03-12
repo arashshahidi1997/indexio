@@ -41,7 +41,7 @@ def test_load_basic_config(sample_config_yaml: Path, sample_project: Path) -> No
 
 
 def test_load_config_relative_path(sample_config_yaml: Path, sample_project: Path) -> None:
-    cfg = load_indexio_config("infra/indexio/config.yaml", root=sample_project)
+    cfg = load_indexio_config(".indexio/config.yaml", root=sample_project)
     assert cfg.config_path == sample_config_yaml.resolve()
 
 
@@ -499,7 +499,7 @@ def test_cli_init_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> 
     cli_main(["init-config", "--root", str(tmp_path)])
     out = capsys.readouterr().out
     assert "[OK]" in out
-    generated = tmp_path / "infra" / "indexio" / "config.yaml"
+    generated = tmp_path / ".indexio" / "config.yaml"
     assert generated.exists()
     payload = yaml.safe_load(generated.read_text(encoding="utf-8"))
     assert "stores" in payload
@@ -508,7 +508,7 @@ def test_cli_init_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> 
 def test_cli_init_config_skip_existing(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    output = tmp_path / "infra" / "indexio" / "config.yaml"
+    output = tmp_path / ".indexio" / "config.yaml"
     output.parent.mkdir(parents=True)
     output.write_text("existing: true\n", encoding="utf-8")
     cli_main(["init-config", "--root", str(tmp_path)])
@@ -519,7 +519,7 @@ def test_cli_init_config_skip_existing(
 
 
 def test_cli_init_config_force(tmp_path: Path) -> None:
-    output = tmp_path / "infra" / "indexio" / "config.yaml"
+    output = tmp_path / ".indexio" / "config.yaml"
     output.parent.mkdir(parents=True)
     output.write_text("old: true\n", encoding="utf-8")
     cli_main(["init-config", "--root", str(tmp_path), "--force"])

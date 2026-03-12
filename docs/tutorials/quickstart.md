@@ -14,12 +14,12 @@ pip install indexio
 indexio init-config --root .
 ```
 
-This writes a starter config to `infra/indexio/config.yaml` with a `docs/**/*.md` source and a local ChromaDB store.
+This writes a starter config to `.indexio/config.yaml` with a `docs/**/*.md` source and a local ChromaDB store.
 
 ## 2. Build the index
 
 ```bash
-indexio build --config infra/indexio/config.yaml --root .
+indexio build --config .indexio/config.yaml --root .
 ```
 
 indexio reads every file matched by your source globs, splits them into chunks, generates embeddings, and stores them in ChromaDB.
@@ -27,7 +27,7 @@ indexio reads every file matched by your source globs, splits them into chunks, 
 ## 3. Query
 
 ```bash
-indexio query --config infra/indexio/config.yaml --root . "how does authentication work"
+indexio query --config .indexio/config.yaml --root . "how does authentication work"
 ```
 
 Results show the most semantically similar chunks, with corpus, source path, and a snippet.
@@ -35,7 +35,7 @@ Results show the most semantically similar chunks, with corpus, source path, and
 ## 4. Check status
 
 ```bash
-indexio status --config infra/indexio/config.yaml --root .
+indexio status --config .indexio/config.yaml --root .
 ```
 
 Lists configured stores (with existence checks) and registered sources.

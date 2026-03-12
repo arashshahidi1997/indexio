@@ -30,6 +30,18 @@ nav:
       - explanation/index.md
       - Architecture: explanation/architecture.md
       - Role In The Projio Ecosystem: explanation/ecosystem.md
+  - Logs:
+      - log/index.md
+      - Commit: log/commit/index.md
+      - Daily: log/daily/index.md
+      - Idea:
+          - log/idea/index.md
+          - Unified Chatbot: log/idea/idea-arash-20260312-163249-548902.md
+          - Pluggable RAG Engines: log/idea/idea-arash-20260312-175539-442171.md
+      - Issue: log/issue/index.md
+      - Meeting: log/meeting/index.md
+      - Personal: log/personal/index.md
+      - Weekly: log/weekly/index.md
   - Reference:
       - reference/index.md
       - CLI: reference/cli.md

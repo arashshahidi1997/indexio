@@ -22,8 +22,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_init.add_argument("--root", default=".", help="Project root (default: .).")
     p_init.add_argument(
         "--output",
-        default="infra/indexio/config.yaml",
-        help="Output path relative to root (default: infra/indexio/config.yaml).",
+        default=".indexio/config.yaml",
+        help="Output path relative to root (default: .indexio/config.yaml).",
     )
     p_init.add_argument("--force", action="store_true", help="Overwrite an existing file.")
 

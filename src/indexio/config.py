@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 
-DEFAULT_CONFIG_REL = Path("infra/indexio/config.yaml")
+DEFAULT_CONFIG_REL = Path(".indexio/config.yaml")
 
 
 def _resolve_path(path: str | Path, root: Path) -> Path:
