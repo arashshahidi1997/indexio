@@ -16,7 +16,7 @@ Indexes document sources (markdown, code, YAML, etc.) into a ChromaDB vector sto
 - **Build pipeline** — `build_index()` reads source globs or paths, splits documents with `RecursiveCharacterTextSplitter`, batches embeddings via HuggingFace, upserts into Chroma. Full rebuild (clears store) and partial rebuild (by source id) both supported.
 - **Query** — `query_index()` and `query_index_multi()` with optional corpus filter, deduplication by source path + chunk index.
 - **Edit helpers** — `sync_owned_sources()` / `replace_owned_sources()` for programmatic YAML config management (used by other ecosystem tools that register their own sources).
-- **CLI** — `indexio init-config / build / query / status / serve` with `--root`, `--store`, `--sources`, `--corpus`, `--k`, `--json` flags.
+- **CLI** — `indexio init / build / query / status / serve` with `--root`, `--store`, `--sources`, `--corpus`, `--k`, `--json` flags.
 - **Chat server** — `indexio.chat` subpackage providing a unified RAG chatbot for all projio subsystems. FastAPI backend with `/chat/` endpoint, pluggable LLM backends (Ollama, OpenAI-compatible), and a reusable JS/CSS frontend widget. Install with `pip install indexio[chat]`, run with `indexio serve`.
 - **Package structure** — `src/` layout, `pyproject.toml`, `Makefile` following biblio/notio conventions.
 

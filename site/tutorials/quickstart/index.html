@@ -1462,21 +1462,21 @@
 <pre><code class="language-bash">pip install indexio
 </code></pre>
 <h2 id="1-initialize-a-config">1. Initialize a config<a class="headerlink" href="#1-initialize-a-config" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio init-config --root .
+<pre><code class="language-bash">indexio init
 </code></pre>
 <p>This writes a starter config to <code>.indexio/config.yaml</code> with a <code>docs/**/*.md</code> source and a local ChromaDB store.</p>
 <h2 id="2-build-the-index">2. Build the index<a class="headerlink" href="#2-build-the-index" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio build --config .indexio/config.yaml --root .
+<pre><code class="language-bash">indexio build
 </code></pre>
 <p>indexio reads every file matched by your source globs, splits them into chunks, generates embeddings, and stores them in ChromaDB.</p>
 <h2 id="3-query">3. Query<a class="headerlink" href="#3-query" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio query --config .indexio/config.yaml --root . &quot;how does authentication work&quot;
+<pre><code class="language-bash">indexio query &quot;how does authentication work&quot;
 </code></pre>
 <p>Results show the most semantically similar chunks, with corpus, source path, and a snippet.</p>
 <h2 id="4-check-status">4. Check status<a class="headerlink" href="#4-check-status" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio status --config .indexio/config.yaml --root .
+<pre><code class="language-bash">indexio status
 </code></pre>
-<p>Lists configured stores (with existence checks) and registered sources.</p>
+<p>Shows the current store plus source state buckets like <code>indexed</code>, <code>changed</code>, and <code>not yet built</code> based on the last build manifest.</p>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../how-to/register-sources/">Register sources from other packages</a></li>

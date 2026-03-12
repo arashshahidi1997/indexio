@@ -3,25 +3,25 @@
 ## Basic query
 
 ```bash
-indexio query --config .indexio/config.yaml --root . "semantic search"
+indexio query "semantic search"
 ```
 
 ## Filter by corpus
 
 ```bash
-indexio query --config .indexio/config.yaml --root . --corpus docs "semantic search"
+indexio query --corpus docs "semantic search"
 ```
 
 ## Adjust number of results
 
 ```bash
-indexio query --config .indexio/config.yaml --root . --k 12 "semantic search"
+indexio query --k 12 "semantic search"
 ```
 
 ## JSON output
 
 ```bash
-indexio query --config .indexio/config.yaml --root . --json "semantic search"
+indexio query --json "semantic search"
 ```
 
 ## Python API

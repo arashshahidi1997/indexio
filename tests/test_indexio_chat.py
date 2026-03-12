@@ -94,3 +94,18 @@ def test_health_endpoint() -> None:
     resp = client.get("/health")
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
+
+
+def test_root_page_serves_chatbot_shell() -> None:
+    from fastapi.testclient import TestClient
+    from indexio.chat.app import create_app
+    from indexio.chat.settings import ChatSettings
+
+    settings = ChatSettings(config_path="fake.yaml", root="/tmp", title="Test Assistant")
+    app = create_app(settings)
+    client = TestClient(app, raise_server_exceptions=False)
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert "Test Assistant" in resp.text
+    assert "/chatbot/chatbot.js" in resp.text
+    assert 'apiUrl: "/chat/"' in resp.text

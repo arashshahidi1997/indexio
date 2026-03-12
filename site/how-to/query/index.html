@@ -1436,16 +1436,16 @@
 
 <h1 id="query-the-index">Query The Index<a class="headerlink" href="#query-the-index" title="Permanent link">&para;</a></h1>
 <h2 id="basic-query">Basic query<a class="headerlink" href="#basic-query" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio query --config .indexio/config.yaml --root . &quot;semantic search&quot;
+<pre><code class="language-bash">indexio query &quot;semantic search&quot;
 </code></pre>
 <h2 id="filter-by-corpus">Filter by corpus<a class="headerlink" href="#filter-by-corpus" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio query --config .indexio/config.yaml --root . --corpus docs &quot;semantic search&quot;
+<pre><code class="language-bash">indexio query --corpus docs &quot;semantic search&quot;
 </code></pre>
 <h2 id="adjust-number-of-results">Adjust number of results<a class="headerlink" href="#adjust-number-of-results" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio query --config .indexio/config.yaml --root . --k 12 &quot;semantic search&quot;
+<pre><code class="language-bash">indexio query --k 12 &quot;semantic search&quot;
 </code></pre>
 <h2 id="json-output">JSON output<a class="headerlink" href="#json-output" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio query --config .indexio/config.yaml --root . --json &quot;semantic search&quot;
+<pre><code class="language-bash">indexio query --json &quot;semantic search&quot;
 </code></pre>
 <h2 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h2>
 <pre><code class="language-python">from indexio import query_index, query_index_multi

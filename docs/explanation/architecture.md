@@ -18,7 +18,7 @@ YAML Config → Load Sources → Read Files → Split into Chunks → Embed → 
 
 **edit** — Programmatic config manipulation. `sync_owned_sources` lets ecosystem packages register their sources without overwriting each other. The caller declares which source ids it owns; all others are preserved.
 
-**cli** — Thin CLI layer exposing `init-config`, `build`, `query`, `status`, and `serve` commands.
+**cli** — Thin CLI layer exposing `init`, `build`, `query`, `status`, and `serve` commands.
 
 ## Key design decisions
 

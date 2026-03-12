@@ -3,7 +3,7 @@
 ## Write the default config
 
 ```bash
-indexio init-config --root /path/to/project
+indexio init --root /path/to/project
 ```
 
 This creates `.indexio/config.yaml` with sensible defaults.
@@ -11,11 +11,11 @@ This creates `.indexio/config.yaml` with sensible defaults.
 ## Custom output path
 
 ```bash
-indexio init-config --root . --output config/indexio.yaml
+indexio init --output config/indexio.yaml
 ```
 
 ## Overwrite an existing config
 
 ```bash
-indexio init-config --root . --force
+indexio init --force
 ```

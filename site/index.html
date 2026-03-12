@@ -1510,7 +1510,7 @@
 <li><strong>Build pipeline</strong> — <code>build_index()</code> reads source globs or paths, splits documents with <code>RecursiveCharacterTextSplitter</code>, batches embeddings via HuggingFace, upserts into Chroma. Full rebuild (clears store) and partial rebuild (by source id) both supported.</li>
 <li><strong>Query</strong> — <code>query_index()</code> and <code>query_index_multi()</code> with optional corpus filter, deduplication by source path + chunk index.</li>
 <li><strong>Edit helpers</strong> — <code>sync_owned_sources()</code> / <code>replace_owned_sources()</code> for programmatic YAML config management (used by other ecosystem tools that register their own sources).</li>
-<li><strong>CLI</strong> — <code>indexio init-config / build / query / status / serve</code> with <code>--root</code>, <code>--store</code>, <code>--sources</code>, <code>--corpus</code>, <code>--k</code>, <code>--json</code> flags.</li>
+<li><strong>CLI</strong> — <code>indexio init / build / query / status / serve</code> with <code>--root</code>, <code>--store</code>, <code>--sources</code>, <code>--corpus</code>, <code>--k</code>, <code>--json</code> flags.</li>
 <li><strong>Chat server</strong> — <code>indexio.chat</code> subpackage providing a unified RAG chatbot for all projio subsystems. FastAPI backend with <code>/chat/</code> endpoint, pluggable LLM backends (Ollama, OpenAI-compatible), and a reusable JS/CSS frontend widget. Install with <code>pip install indexio[chat]</code>, run with <code>indexio serve</code>.</li>
 <li><strong>Package structure</strong> — <code>src/</code> layout, <code>pyproject.toml</code>, <code>Makefile</code> following biblio/notio conventions.</li>
 </ul>

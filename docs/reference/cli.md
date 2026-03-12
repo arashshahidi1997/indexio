@@ -1,6 +1,6 @@
 # CLI Reference
 
-## `indexio init-config`
+## `indexio init`
 
 Write a starter config into a project.
 
@@ -16,7 +16,7 @@ Build a Chroma index from an indexio config.
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--config` | *(required)* | Path to the indexio config file |
+| `--config` | `.indexio/config.yaml` | Path to the indexio config file |
 | `--root` | `.` | Project root |
 | `--store` | | Named store from the config |
 | `--sources` | | Comma-separated source ids for partial rebuild |
@@ -28,7 +28,7 @@ Query the Chroma index.
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--config` | *(required)* | Path to the indexio config file |
+| `--config` | `.indexio/config.yaml` | Path to the indexio config file |
 | `--root` | `.` | Project root |
 | `--store` | | Named store from the config |
 | `--corpus` | | Corpus filter |
@@ -40,9 +40,11 @@ Query the Chroma index.
 
 Show index status for each configured store.
 
+Reports source state without rebuilding by comparing current file matches against the last build manifest stored next to the local index.
+
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--config` | *(required)* | Path to the indexio config file |
+| `--config` | `.indexio/config.yaml` | Path to the indexio config file |
 | `--root` | `.` | Project root |
 
 ## `indexio serve`
@@ -51,12 +53,12 @@ Start the chat server (requires `indexio[chat]`).
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--config` | *(required)* | Path to the indexio config file |
+| `--config` | `.indexio/config.yaml` | Path to the indexio config file |
 | `--root` | `.` | Project root |
 | `--store` | | Named store |
 | `--corpus` | | Corpus filter for retrieval |
 | `--host` | `0.0.0.0` | Bind host |
-| `--port` | `9100` | Bind port |
+| `--port` | `9100` | Preferred bind port; falls forward to the next free port if occupied |
 | `--llm-backend` | `ollama` | LLM backend: `ollama` or `openai` |
 | `--llm-model` | `llama3` | LLM model name |
 | `--llm-base-url` | `http://localhost:11434` | LLM API base URL |

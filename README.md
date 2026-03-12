@@ -16,17 +16,19 @@ make dev
 
 ```bash
 # Write a starter config into your project
-indexio init-config --root . --output .indexio/config.yaml
+indexio init
 
 # Build the index
-indexio build --config .indexio/config.yaml --root .
+indexio build
 
 # Query
-indexio query --config .indexio/config.yaml --root . "how does authentication work"
+indexio query "how does authentication work"
 
 # Show store status
-indexio status --config .indexio/config.yaml --root .
+indexio status
 ```
+
+`indexio status` compares the current source matches to the last build manifest and groups sources into buckets such as `indexed`, `changed`, and `not yet built`.
 
 ## Chat server
 
@@ -37,12 +39,15 @@ A built-in RAG chatbot that any projio subsystem can embed in its docs.
 pip install indexio[chat]
 
 # Start the chat server
-indexio serve --config .indexio/config.yaml --root .
+indexio serve
 
 # With a custom LLM
-indexio serve --config .indexio/config.yaml --root . \
+indexio serve \
     --llm-backend openai --llm-model gpt-4 --llm-base-url https://api.openai.com
 ```
+
+Open the URL printed by the server, such as `http://localhost:9100/`.
+If that port is already in use, `indexio serve` will automatically pick the next free port and print it.
 
 Embed the widget in any docs site:
 

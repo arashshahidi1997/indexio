@@ -2,13 +2,58 @@ from __future__ import annotations
 
 import argparse
 import json
+import socket
 from pathlib import Path
 from typing import Iterable
 
 from . import build as build_mod
 from . import query as query_mod
-from .config import default_config_template
+from .config import DEFAULT_CONFIG_REL, default_config_template
 from .edit import write_raw_config, load_raw_config
+
+
+def _source_state(config, src, manifest_sources):
+    snapshot = build_mod.source_snapshot(config, src)
+    previous = manifest_sources.get(src.id) if manifest_sources else None
+
+    if snapshot["files"] == 0:
+        state = "empty match" if previous is None else "missing files"
+    elif previous is None:
+        state = "not yet built"
+    elif (
+        previous.get("matched_paths") == snapshot["matched_paths"]
+        and previous.get("file_state") == snapshot["file_state"]
+    ):
+        state = "indexed"
+    else:
+        state = "changed"
+
+    return {
+        "state": state,
+        "files": snapshot["files"],
+        "selector": src.glob or src.path,
+        "chunks": None if previous is None else previous.get("chunks"),
+    }
+
+
+def _port_available(host: str, port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind((host, port))
+        except OSError:
+            return False
+    return True
+
+
+def _resolve_bind_port(host: str, preferred_port: int, *, max_tries: int = 20) -> tuple[int, bool]:
+    for offset in range(max_tries + 1):
+        candidate = preferred_port + offset
+        if _port_available(host, candidate):
+            return candidate, candidate != preferred_port
+    raise RuntimeError(
+        f"Could not find a free port in range {preferred_port}-{preferred_port + max_tries}"
+    )
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -18,24 +63,32 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_init = sub.add_parser("init-config", help="Write a starter indexio config into a project.")
+    p_init = sub.add_parser("init", help="Write a starter indexio config into a project.")
     p_init.add_argument("--root", default=".", help="Project root (default: .).")
     p_init.add_argument(
         "--output",
-        default=".indexio/config.yaml",
-        help="Output path relative to root (default: .indexio/config.yaml).",
+        default=str(DEFAULT_CONFIG_REL),
+        help=f"Output path relative to root (default: {DEFAULT_CONFIG_REL}).",
     )
     p_init.add_argument("--force", action="store_true", help="Overwrite an existing file.")
 
     p_build = sub.add_parser("build", help="Build a Chroma index from an indexio config.")
-    p_build.add_argument("--config", required=True, help="Path to the indexio config file.")
+    p_build.add_argument(
+        "--config",
+        default=str(DEFAULT_CONFIG_REL),
+        help=f"Path to the indexio config file (default: {DEFAULT_CONFIG_REL}).",
+    )
     p_build.add_argument("--root", default=".", help="Project root for resolving relative paths.")
     p_build.add_argument("--store", help="Named store from the config.")
     p_build.add_argument("--sources", help="Comma-separated source ids for partial rebuild.")
     p_build.add_argument("--json", action="store_true", help="Print JSON summary.")
 
     p_query = sub.add_parser("query", help="Query the Chroma index.")
-    p_query.add_argument("--config", required=True, help="Path to the indexio config file.")
+    p_query.add_argument(
+        "--config",
+        default=str(DEFAULT_CONFIG_REL),
+        help=f"Path to the indexio config file (default: {DEFAULT_CONFIG_REL}).",
+    )
     p_query.add_argument("--root", default=".", help="Project root for resolving relative paths.")
     p_query.add_argument("--store", help="Named store from the config.")
     p_query.add_argument("--corpus", help="Optional corpus filter.")
@@ -44,11 +97,19 @@ def _build_parser() -> argparse.ArgumentParser:
     p_query.add_argument("query", nargs="+", help="Query text.")
 
     p_status = sub.add_parser("status", help="Show index status for each configured store.")
-    p_status.add_argument("--config", required=True, help="Path to the indexio config file.")
+    p_status.add_argument(
+        "--config",
+        default=str(DEFAULT_CONFIG_REL),
+        help=f"Path to the indexio config file (default: {DEFAULT_CONFIG_REL}).",
+    )
     p_status.add_argument("--root", default=".", help="Project root for resolving relative paths.")
 
     p_serve = sub.add_parser("serve", help="Start the chat server (requires indexio[chat]).")
-    p_serve.add_argument("--config", required=True, help="Path to the indexio config file.")
+    p_serve.add_argument(
+        "--config",
+        default=str(DEFAULT_CONFIG_REL),
+        help=f"Path to the indexio config file (default: {DEFAULT_CONFIG_REL}).",
+    )
     p_serve.add_argument("--root", default=".", help="Project root for resolving relative paths.")
     p_serve.add_argument("--store", help="Named store from the config.")
     p_serve.add_argument("--corpus", help="Optional corpus filter for retrieval.")
@@ -65,7 +126,7 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Iterable[str] | None = None) -> None:
     args = _build_parser().parse_args(list(argv) if argv is not None else None)
 
-    if args.command == "init-config":
+    if args.command == "init":
         root = Path(args.root).expanduser().resolve()
         output = (root / args.output).resolve()
         if output.exists() and not args.force:
@@ -85,6 +146,7 @@ def main(argv: Iterable[str] | None = None) -> None:
             root=args.root,
             store=args.store,
             sources_filter=sources_filter,
+            verbose=not args.json,
         )
         if args.json:
             print(json.dumps(payload, indent=2))
@@ -122,18 +184,51 @@ def main(argv: Iterable[str] | None = None) -> None:
         config = load_indexio_config(args.config, root=args.root)
         print(f"Config : {config.config_path}")
         print(f"Root   : {config.root}")
-        print(f"Sources: {len(config.sources)}")
-        print()
-        for name, store in config.stores.items():
-            exists = store.persist_directory.exists()
-            marker = "local" if name == config.default_store else ("canonical" if name == config.canonical_store else "")
+
+        for store in config.stores.values():
+            marker = "local" if store.name == config.default_store else ("canonical" if store.name == config.canonical_store else "")
             tag = f" [{marker}]" if marker else ""
-            status = "exists" if exists else "missing"
-            print(f"  Store '{name}'{tag}: {store.persist_directory}  [{status}]")
-        print()
-        for src in config.sources:
-            glob_or_path = src.glob or src.path
-            print(f"  Source '{src.id}' corpus={src.corpus}  {glob_or_path}")
+            manifest = build_mod.load_status_manifest(store.persist_directory)
+            manifest_sources = {} if manifest is None else dict(manifest.get("sources", {}))
+            print()
+            print(f"On store '{store.name}'{tag}")
+            print(f"DB      : {store.persist_directory}  [{'exists' if store.persist_directory.exists() else 'missing'}]")
+            if manifest is None:
+                print("Manifest: missing")
+            else:
+                print(f"Manifest: present  (built_at={manifest.get('built_at', 'unknown')})")
+
+            buckets: dict[str, list[str]] = {
+                "changed": [],
+                "not yet built": [],
+                "missing files": [],
+                "empty match": [],
+                "indexed": [],
+            }
+            for src in config.sources:
+                details = _source_state(config, src, manifest_sources)
+                line = f"{src.id} ({src.corpus}) - {details['files']} files"
+                if details["chunks"] is not None:
+                    line += f", {details['chunks']} chunks"
+                line += f" [{details['selector']}]"
+                buckets[details["state"]].append(line)
+
+            print()
+            for state, lines in buckets.items():
+                if not lines:
+                    continue
+                print(f"{state}:")
+                for line in lines:
+                    print(f"  - {line}")
+
+            actionable_ids: list[str] = []
+            for state in ("changed", "not yet built", "missing files", "empty match"):
+                actionable_ids.extend(line.split(" ", 1)[0] for line in buckets[state])
+            if actionable_ids:
+                print()
+                print("Actions:")
+                print("  Run `indexio build` to refresh the index.")
+                print(f"  Or rebuild selected sources: indexio build --sources {','.join(actionable_ids)}")
         return
 
     if args.command == "serve":
@@ -158,8 +253,15 @@ def main(argv: Iterable[str] | None = None) -> None:
             llm_base_url=args.llm_base_url,
             title=args.title,
         )
+        resolved_port, changed = _resolve_bind_port(settings.host, settings.port)
+        if changed:
+            print(
+                f"[indexio-chat] Port {settings.port} is unavailable; using {resolved_port} instead."
+            )
+            settings.port = resolved_port
         app = create_app(settings)
         print(f"[indexio-chat] Serving on http://{settings.host}:{settings.port}")
+        print(f"[indexio-chat] Open page:  http://{settings.host}:{settings.port}/")
         print(f"[indexio-chat] Widget at  http://{settings.host}:{settings.port}/chatbot/chatbot.js")
         uvicorn.run(app, host=settings.host, port=settings.port)
         return

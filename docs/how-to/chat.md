@@ -11,19 +11,22 @@ pip install indexio[chat]
 ## Start the server
 
 ```bash
-indexio serve --config .indexio/config.yaml --root .
+indexio serve
 ```
+
+Then open the URL printed by the server, such as `http://localhost:9100/`.
+If the requested port is already in use, `indexio serve` will automatically pick the next free port and print it.
 
 ## Custom LLM backend
 
 ```bash
 # OpenAI-compatible API
-indexio serve --config .indexio/config.yaml --root . \
+indexio serve \
     --llm-backend openai --llm-model gpt-4 \
     --llm-base-url https://api.openai.com
 
 # Local Ollama (default)
-indexio serve --config .indexio/config.yaml --root . \
+indexio serve \
     --llm-backend ollama --llm-model llama3
 ```
 

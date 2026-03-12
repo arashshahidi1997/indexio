@@ -1400,7 +1400,7 @@
 <p><strong>build</strong> — Reads files matched by source globs or paths, splits text with <code>RecursiveCharacterTextSplitter</code>, generates embeddings via HuggingFace, and upserts into ChromaDB in batches of 100. Supports full rebuild (clear + reindex) and partial rebuild (by source id).</p>
 <p><strong>query</strong> — Wraps ChromaDB similarity search with optional corpus filtering and deduplication by <code>(source_path, chunk_index)</code>. <code>query_index_multi</code> fans out multiple queries and merges results.</p>
 <p><strong>edit</strong> — Programmatic config manipulation. <code>sync_owned_sources</code> lets ecosystem packages register their sources without overwriting each other. The caller declares which source ids it owns; all others are preserved.</p>
-<p><strong>cli</strong> — Thin CLI layer exposing <code>init-config</code>, <code>build</code>, <code>query</code>, <code>status</code>, and <code>serve</code> commands.</p>
+<p><strong>cli</strong> — Thin CLI layer exposing <code>init</code>, <code>build</code>, <code>query</code>, <code>status</code>, and <code>serve</code> commands.</p>
 <h2 id="key-design-decisions">Key design decisions<a class="headerlink" href="#key-design-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Config-first</strong>: all behavior is driven by YAML. No auto-detection of project structure.</li>

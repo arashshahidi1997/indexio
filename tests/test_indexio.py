@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -436,6 +438,56 @@ def test_build_documents(sample_config_yaml: Path, sample_project: Path) -> None
     assert "source_path" in meta
 
 
+def test_build_index_full_rebuild_clears_before_opening_db(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from indexio import build as build_mod
+    from indexio.config import IndexioConfig, SourceConfig, StoreConfig
+
+    persist_directory = tmp_path / "db"
+    persist_directory.mkdir()
+    (persist_directory / "stale.txt").write_text("stale\n", encoding="utf-8")
+
+    cfg = IndexioConfig(
+        root=tmp_path,
+        config_path=tmp_path / ".indexio" / "config.yaml",
+        embedding_model="fake-model",
+        chunk_size_chars=100,
+        chunk_overlap_chars=10,
+        default_store="local",
+        canonical_store=None,
+        stores={"local": StoreConfig(name="local", persist_directory=persist_directory)},
+        sources=[SourceConfig(id="docs", corpus="docs", glob="docs/**/*.md")],
+    )
+
+    events: list[str] = []
+
+    class FakeChroma:
+        def __init__(self, *, embedding_function, persist_directory: str) -> None:
+            events.append("open_db")
+            assert not (Path(persist_directory) / "stale.txt").exists()
+            self._collection = SimpleNamespace(delete=lambda **kwargs: None)
+
+        def add_documents(self, documents) -> None:
+            return None
+
+    monkeypatch.setattr(build_mod, "load_indexio_config", lambda config_path, root: cfg)
+    monkeypatch.setattr(build_mod, "resolve_store", lambda config, store=None: cfg.stores["local"])
+    monkeypatch.setattr(build_mod, "make_embeddings", lambda model_name: object())
+    monkeypatch.setattr(
+        build_mod,
+        "_process_source",
+        lambda config, src, **kwargs: events.append(f"process_{src.id}") or {"files": 0, "chars": 0, "chunks": 0},
+    )
+    monkeypatch.setitem(sys.modules, "langchain_chroma", SimpleNamespace(Chroma=FakeChroma))
+
+    payload = build_mod.build_index(config_path=".indexio/config.yaml", root=tmp_path, verbose=False)
+    assert payload["partial"] is False
+    assert events == ["open_db", "process_docs"]
+    assert persist_directory.exists()
+    assert not (persist_directory / "stale.txt").exists()
+
+
 # ---- build: chunk id generation ----------------------------------------------
 
 def test_make_chunk_ids() -> None:
@@ -493,10 +545,10 @@ def test_doc_to_result_truncates_long_snippet() -> None:
     assert len(result["snippet"]) == 400
 
 
-# ---- CLI: init-config --------------------------------------------------------
+# ---- CLI: init --------------------------------------------------------
 
 def test_cli_init_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    cli_main(["init-config", "--root", str(tmp_path)])
+    cli_main(["init", "--root", str(tmp_path)])
     out = capsys.readouterr().out
     assert "[OK]" in out
     generated = tmp_path / ".indexio" / "config.yaml"
@@ -511,7 +563,7 @@ def test_cli_init_config_skip_existing(
     output = tmp_path / ".indexio" / "config.yaml"
     output.parent.mkdir(parents=True)
     output.write_text("existing: true\n", encoding="utf-8")
-    cli_main(["init-config", "--root", str(tmp_path)])
+    cli_main(["init", "--root", str(tmp_path)])
     out = capsys.readouterr().out
     assert "[SKIP]" in out
     # content unchanged
@@ -522,7 +574,7 @@ def test_cli_init_config_force(tmp_path: Path) -> None:
     output = tmp_path / ".indexio" / "config.yaml"
     output.parent.mkdir(parents=True)
     output.write_text("old: true\n", encoding="utf-8")
-    cli_main(["init-config", "--root", str(tmp_path), "--force"])
+    cli_main(["init", "--root", str(tmp_path), "--force"])
     payload = yaml.safe_load(output.read_text(encoding="utf-8"))
     assert "stores" in payload
     assert "old" not in payload
@@ -535,5 +587,116 @@ def test_cli_status(
 ) -> None:
     cli_main(["status", "--config", str(sample_config_yaml), "--root", str(sample_project)])
     out = capsys.readouterr().out
-    assert "local" in out
-    assert "docs" in out
+    assert "On store 'local'" in out
+    assert "Manifest: missing" in out
+    assert "not yet built:" in out
+    assert "docs (docs)" in out
+
+
+def test_cli_status_uses_default_root_and_config(
+    sample_project: Path,
+    sample_config_yaml: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    assert sample_config_yaml.exists()
+    monkeypatch.chdir(sample_project)
+    cli_main(["status"])
+    out = capsys.readouterr().out
+    assert ".indexio/config.yaml" in out
+    assert "On store 'local'" in out
+
+
+def test_cli_status_reports_changed_source_from_manifest(
+    sample_config_yaml: Path, sample_project: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from indexio.build import status_manifest_path
+    from indexio.config import load_indexio_config, resolve_store
+
+    cfg = load_indexio_config(sample_config_yaml, root=sample_project)
+    store = resolve_store(cfg)
+    store.persist_directory.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "version": 1,
+        "built_at": "2026-03-12T12:00:00+00:00",
+        "sources": {
+            "docs": {
+                "id": "docs",
+                "corpus": "docs",
+                "selector": "docs/**/*.md",
+                "files": 1,
+                "chars": 10,
+                "chunks": 2,
+                "matched_paths": ["docs/getting-started.md"],
+                "file_state": {"docs/getting-started.md": {"mtime_ns": 1, "size": 1}},
+            }
+        },
+    }
+    status_manifest_path(store.persist_directory).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    cli_main(["status", "--config", str(sample_config_yaml), "--root", str(sample_project)])
+    out = capsys.readouterr().out
+    assert "Manifest: present" in out
+    assert "changed:" in out
+    assert "docs (docs)" in out
+    assert "Actions:" in out
+
+
+def test_cli_build_prints_completion_and_passes_verbose(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    called: dict[str, object] = {}
+
+    def fake_build_index(**kwargs):
+        called.update(kwargs)
+        print("[BUILD] Complete: 1 source(s), 2 files, 3 chunks")
+        return {"ok": True}
+
+    monkeypatch.setattr("indexio.cli.build_mod.build_index", fake_build_index)
+    cli_main(["build"])
+    out = capsys.readouterr().out
+    assert "[BUILD] Complete" in out
+    assert "[INFO] Index build complete." in out
+    assert called["config_path"] == ".indexio/config.yaml"
+    assert called["root"] == "."
+    assert called["verbose"] is True
+
+
+def test_cli_build_json_suppresses_progress(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    called: dict[str, object] = {}
+
+    def fake_build_index(**kwargs):
+        called.update(kwargs)
+        return {"ok": True}
+
+    monkeypatch.setattr("indexio.cli.build_mod.build_index", fake_build_index)
+    cli_main(["build", "--json"])
+    out = capsys.readouterr().out
+    assert out.strip() == '{\n  "ok": true\n}'
+    assert called["verbose"] is False
+
+
+def test_resolve_bind_port_prefers_requested_port(monkeypatch: pytest.MonkeyPatch) -> None:
+    from indexio.cli import _resolve_bind_port
+
+    monkeypatch.setattr("indexio.cli._port_available", lambda host, port: port == 9100)
+    port, changed = _resolve_bind_port("127.0.0.1", 9100)
+    assert port == 9100
+    assert changed is False
+
+
+def test_resolve_bind_port_falls_forward(monkeypatch: pytest.MonkeyPatch) -> None:
+    from indexio.cli import _resolve_bind_port
+
+    monkeypatch.setattr("indexio.cli._port_available", lambda host, port: port == 9102)
+    port, changed = _resolve_bind_port("127.0.0.1", 9100, max_tries=5)
+    assert port == 9102
+    assert changed is True
+
+
+def test_resolve_bind_port_raises_when_no_port_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    from indexio.cli import _resolve_bind_port
+
+    monkeypatch.setattr("indexio.cli._port_available", lambda host, port: False)
+    with pytest.raises(RuntimeError, match="Could not find a free port"):
+        _resolve_bind_port("127.0.0.1", 9100, max_tries=2)

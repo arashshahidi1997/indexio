@@ -36,7 +36,7 @@ make publish-test   # TestPyPI
 - `build.py` — indexing pipeline: load → chunk → embed → upsert to ChromaDB
 - `query.py` — vector similarity search with corpus filtering & dedup
 - `edit.py` — programmatic config manipulation (source registration)
-- `cli.py` — CLI: `init-config`, `build`, `query`, `status`
+- `cli.py` — CLI: `init`, `build`, `query`, `status`
 - `chat/` — FastAPI RAG server with pluggable LLM backends (Ollama, OpenAI-compatible)
 
 ## Conventions

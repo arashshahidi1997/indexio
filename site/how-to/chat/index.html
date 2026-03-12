@@ -1440,16 +1440,18 @@
 <pre><code class="language-bash">pip install indexio[chat]
 </code></pre>
 <h2 id="start-the-server">Start the server<a class="headerlink" href="#start-the-server" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">indexio serve --config .indexio/config.yaml --root .
+<pre><code class="language-bash">indexio serve
 </code></pre>
+<p>Then open the URL printed by the server, such as <code>http://localhost:9100/</code>.
+If the requested port is already in use, <code>indexio serve</code> will automatically pick the next free port and print it.</p>
 <h2 id="custom-llm-backend">Custom LLM backend<a class="headerlink" href="#custom-llm-backend" title="Permanent link">&para;</a></h2>
 <pre><code class="language-bash"># OpenAI-compatible API
-indexio serve --config .indexio/config.yaml --root . \
+indexio serve \
     --llm-backend openai --llm-model gpt-4 \
     --llm-base-url https://api.openai.com
 
 # Local Ollama (default)
-indexio serve --config .indexio/config.yaml --root . \
+indexio serve \
     --llm-backend ollama --llm-model llama3
 </code></pre>
 <h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
