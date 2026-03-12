@@ -46,3 +46,5 @@ publish:
 
 publish-test:
 	$(PUBLISH) --test .
+
+-include .projio/projio.mk

@@ -28,6 +28,38 @@ indexio query --config infra/indexio/config.yaml --root . "how does authenticati
 indexio status --config infra/indexio/config.yaml --root .
 ```
 
+## Chat server
+
+A built-in RAG chatbot that any projio subsystem can embed in its docs.
+
+```bash
+# Install with chat support
+pip install indexio[chat]
+
+# Start the chat server
+indexio serve --config infra/indexio/config.yaml --root .
+
+# With a custom LLM
+indexio serve --config infra/indexio/config.yaml --root . \
+    --llm-backend openai --llm-model gpt-4 --llm-base-url https://api.openai.com
+```
+
+Embed the widget in any docs site:
+
+```html
+<script>
+  window.INDEXIO_CHAT = {
+    apiUrl: "http://localhost:9100/chat/",
+    title: "My Docs Assistant",
+    storageKey: "myproject_chat_v1",
+  };
+</script>
+<script src="http://localhost:9100/chatbot/chatbot.js"></script>
+<link href="http://localhost:9100/chatbot/chatbot.css" rel="stylesheet">
+```
+
+Settings are also configurable via `INDEXIO_CHAT_*` environment variables.
+
 ## Python API
 
 ```python

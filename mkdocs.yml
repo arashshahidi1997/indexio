@@ -1,0 +1,37 @@
+site_name: indexio
+site_description: Lightweight semantic indexing and retrieval for project knowledge sources
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Tutorials:
+      - tutorials/index.md
+      - Quickstart: tutorials/quickstart.md
+  - How-To Guides:
+      - how-to/index.md
+      - Initialize A Config: how-to/init.md
+      - Build An Index: how-to/build.md
+      - Query The Index: how-to/query.md
+      - Register Sources From Other Packages: how-to/register-sources.md
+      - Run The Chat Server: how-to/chat.md
+  - Explanation:
+      - explanation/index.md
+      - Architecture: explanation/architecture.md
+      - Role In The Projio Ecosystem: explanation/ecosystem.md
+  - Reference:
+      - reference/index.md
+      - CLI: reference/cli.md
+      - Configuration: reference/configuration.md
+      - Python API: reference/api.md

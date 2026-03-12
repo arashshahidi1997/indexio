@@ -1,0 +1,43 @@
+# projio workspace config
+project_name: indexio
+project_kind: generic
+description: ""
+
+indexio:
+  config: infra/indexio/config.yaml   # path to indexio config
+  persist_dir: .projio/index           # chroma db location
+
+biblio:
+  enabled: true
+  config: bib/config/biblio.yml
+
+notio:
+  enabled: true
+  notes_dir: notes/
+
+codio:
+  enabled: true
+  catalog_path: .codio/catalog.yml
+  profiles_path: .codio/profiles.yml
+  notes_dir: docs/reference/codelib/libraries/
+
+site:
+  base_port: 8000
+  host: "127.0.0.1"
+
+helpers:
+  sibling:
+    github:
+      sibling: github
+      credential: github
+      project_template: "{project_name}"
+    gitlab:
+      sibling: gitlab
+      credential: gitlab
+      project_template: "{project_name}"
+    ria:
+      sibling: origin
+      alias_strategy: basename
+  docs:
+    mkdocs:
+      enabled: false

@@ -47,6 +47,18 @@ def _build_parser() -> argparse.ArgumentParser:
     p_status.add_argument("--config", required=True, help="Path to the indexio config file.")
     p_status.add_argument("--root", default=".", help="Project root for resolving relative paths.")
 
+    p_serve = sub.add_parser("serve", help="Start the chat server (requires indexio[chat]).")
+    p_serve.add_argument("--config", required=True, help="Path to the indexio config file.")
+    p_serve.add_argument("--root", default=".", help="Project root for resolving relative paths.")
+    p_serve.add_argument("--store", help="Named store from the config.")
+    p_serve.add_argument("--corpus", help="Optional corpus filter for retrieval.")
+    p_serve.add_argument("--host", default="0.0.0.0", help="Bind host (default: 0.0.0.0).")
+    p_serve.add_argument("--port", type=int, default=9100, help="Bind port (default: 9100).")
+    p_serve.add_argument("--llm-backend", default="ollama", help="LLM backend: ollama or openai (default: ollama).")
+    p_serve.add_argument("--llm-model", default="llama3", help="LLM model name (default: llama3).")
+    p_serve.add_argument("--llm-base-url", default="http://localhost:11434", help="LLM API base URL.")
+    p_serve.add_argument("--title", default="Docs Assistant", help="Chat widget title.")
+
     return parser
 
 
@@ -122,6 +134,34 @@ def main(argv: Iterable[str] | None = None) -> None:
         for src in config.sources:
             glob_or_path = src.glob or src.path
             print(f"  Source '{src.id}' corpus={src.corpus}  {glob_or_path}")
+        return
+
+    if args.command == "serve":
+        try:
+            import uvicorn
+            from .chat.settings import ChatSettings
+            from .chat.app import create_app
+        except ImportError as exc:
+            raise SystemExit(
+                f"Chat dependencies not installed. Run: pip install indexio[chat]\n({exc})"
+            ) from exc
+
+        settings = ChatSettings(
+            config_path=args.config,
+            root=args.root,
+            store=args.store,
+            corpus=args.corpus,
+            host=args.host,
+            port=args.port,
+            llm_backend=args.llm_backend,
+            llm_model=args.llm_model,
+            llm_base_url=args.llm_base_url,
+            title=args.title,
+        )
+        app = create_app(settings)
+        print(f"[indexio-chat] Serving on http://{settings.host}:{settings.port}")
+        print(f"[indexio-chat] Widget at  http://{settings.host}:{settings.port}/chatbot/chatbot.js")
+        uvicorn.run(app, host=settings.host, port=settings.port)
         return
 
     raise SystemExit(2)
