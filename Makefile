@@ -1,4 +1,4 @@
-PYTHON ?= /storage/share/python/environments/Anaconda3/envs/cogpy/bin/python
+PYTHON ?= python
 PUBLISH ?= /storage2/arash/infra/bin/publish_pypi.sh
 DATALAD ?= /storage/share/python/environments/Anaconda3/envs/cogpy/bin/datalad
 MSG ?= Update indexio
@@ -15,8 +15,6 @@ help:
 		'make build         # build wheel and sdist' \
 		'make check         # run twine check on dist artifacts' \
 		'make clean         # remove local build artifacts' \
-		'make save MSG="…"  # datalad save with a custom message' \
-		'make push          # datalad push --to github' \
 		'make publish       # publish to PyPI via personal helper' \
 		'make publish-test  # publish to TestPyPI via personal helper'
 
@@ -34,12 +32,6 @@ check:
 
 clean:
 	rm -rf build dist .pytest_cache .mypy_cache src/*.egg-info src/indexio.egg-info
-
-save:
-	$(DATALAD) save -m "$(MSG)"
-
-push:
-	$(DATALAD) push --to github
 
 publish:
 	$(PUBLISH) .

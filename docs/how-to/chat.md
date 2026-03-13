@@ -1,6 +1,9 @@
 # Run The Chat Server
 
-The chat server provides a RAG-powered Q&A endpoint and an embeddable web widget.
+The chat server provides a RAG-powered Q&A endpoint, a demo page, and embeddable widget assets.
+
+`indexio` is responsible for serving the backend and widget.
+If your project uses `projio` for site builds, `projio` is responsible for mounting the widget into supported site frameworks.
 
 ## Install
 
@@ -39,7 +42,7 @@ INDEXIO_CHAT_PORT=8080
 INDEXIO_CHAT_LLM_MODEL=mistral
 ```
 
-## Embed the widget
+## Embed the widget directly
 
 ```html
 <script>
@@ -51,3 +54,5 @@ INDEXIO_CHAT_LLM_MODEL=mistral
 <script src="http://localhost:9100/chatbot/chatbot.js"></script>
 <link href="http://localhost:9100/chatbot/chatbot.css" rel="stylesheet">
 ```
+
+If you are using `projio`, prefer enabling `site.chatbot` in `.projio/config.yml` so the site builder handles widget injection for you.

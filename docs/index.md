@@ -17,7 +17,7 @@ Indexes document sources (markdown, code, YAML, etc.) into a ChromaDB vector sto
 - **Query** — `query_index()` and `query_index_multi()` with optional corpus filter, deduplication by source path + chunk index.
 - **Edit helpers** — `sync_owned_sources()` / `replace_owned_sources()` for programmatic YAML config management (used by other ecosystem tools that register their own sources).
 - **CLI** — `indexio init / build / query / status / serve` with `--root`, `--store`, `--sources`, `--corpus`, `--k`, `--json` flags.
-- **Chat server** — `indexio.chat` subpackage providing a unified RAG chatbot for all projio subsystems. FastAPI backend with `/chat/` endpoint, pluggable LLM backends (Ollama, OpenAI-compatible), and a reusable JS/CSS frontend widget. Install with `pip install indexio[chat]`, run with `indexio serve`.
+- **Chat server** — `indexio.chat` subpackage providing a unified RAG chatbot backend plus reusable widget assets. FastAPI backend with `/chat/` endpoint, pluggable LLM backends (Ollama, OpenAI-compatible), and a reusable JS/CSS frontend widget. Install with `pip install indexio[chat]`, run with `indexio serve`.
 - **Package structure** — `src/` layout, `pyproject.toml`, `Makefile` following biblio/notio conventions.
 
 ### What is not yet done
@@ -38,7 +38,7 @@ Indexes document sources (markdown, code, YAML, etc.) into a ChromaDB vector sto
 - [ ] Write tests for the chat pipeline and endpoint
 - [ ] Publish to PyPI as `indexio 0.1.0`
 - [ ] Add `indexio status --json` output for machine consumption
-- [ ] Integrate the chatbot widget into biblio, codio, and notio docs sites
+- [ ] Expand chatbot integration guidance beyond the current `projio`-managed MkDocs workflow
 
 ### Medium-term (v0.2)
 

@@ -32,7 +32,10 @@ indexio status
 
 ## Chat server
 
-A built-in RAG chatbot that any projio subsystem can embed in its docs.
+A built-in RAG chatbot backend and embeddable widget.
+
+`indexio` owns the chat API, demo page, and widget assets.
+`projio` owns site-builder-specific mounting for ecosystem docs sites.
 
 ```bash
 # Install with chat support
@@ -49,7 +52,7 @@ indexio serve \
 Open the URL printed by the server, such as `http://localhost:9100/`.
 If that port is already in use, `indexio serve` will automatically pick the next free port and print it.
 
-Embed the widget in any docs site:
+Embed the widget directly in any docs site:
 
 ```html
 <script>
@@ -64,6 +67,8 @@ Embed the widget in any docs site:
 ```
 
 Settings are also configurable via `INDEXIO_CHAT_*` environment variables.
+
+If your project uses `projio` to build docs sites, prefer enabling chatbot injection there instead of wiring the widget tags by hand.
 
 ## Python API
 

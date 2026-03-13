@@ -624,10 +624,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#embed-the-widget" class="md-nav__link">
+  <a href="#embed-the-widget-directly" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Embed the widget
+        Embed the widget directly
       
     </span>
   </a>
@@ -1407,10 +1407,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#embed-the-widget" class="md-nav__link">
+  <a href="#embed-the-widget-directly" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Embed the widget
+        Embed the widget directly
       
     </span>
   </a>
@@ -1435,7 +1435,9 @@
 
 
 <h1 id="run-the-chat-server">Run The Chat Server<a class="headerlink" href="#run-the-chat-server" title="Permanent link">&para;</a></h1>
-<p>The chat server provides a RAG-powered Q&amp;A endpoint and an embeddable web widget.</p>
+<p>The chat server provides a RAG-powered Q&amp;A endpoint, a demo page, and embeddable widget assets.</p>
+<p><code>indexio</code> is responsible for serving the backend and widget.
+If your project uses <code>projio</code> for site builds, <code>projio</code> is responsible for mounting the widget into supported site frameworks.</p>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <pre><code class="language-bash">pip install indexio[chat]
 </code></pre>
@@ -1459,7 +1461,7 @@ indexio serve \
 <pre><code class="language-bash">INDEXIO_CHAT_PORT=8080
 INDEXIO_CHAT_LLM_MODEL=mistral
 </code></pre>
-<h2 id="embed-the-widget">Embed the widget<a class="headerlink" href="#embed-the-widget" title="Permanent link">&para;</a></h2>
+<h2 id="embed-the-widget-directly">Embed the widget directly<a class="headerlink" href="#embed-the-widget-directly" title="Permanent link">&para;</a></h2>
 <pre><code class="language-html">&lt;script&gt;
   window.INDEXIO_CHAT = {
     apiUrl: &quot;http://localhost:9100/chat/&quot;,
@@ -1469,6 +1471,7 @@ INDEXIO_CHAT_LLM_MODEL=mistral
 &lt;script src=&quot;http://localhost:9100/chatbot/chatbot.js&quot;&gt;&lt;/script&gt;
 &lt;link href=&quot;http://localhost:9100/chatbot/chatbot.css&quot; rel=&quot;stylesheet&quot;&gt;
 </code></pre>
+<p>If you are using <code>projio</code>, prefer enabling <code>site.chatbot</code> in <code>.projio/config.yml</code> so the site builder handles widget injection for you.</p>
 
 
 
