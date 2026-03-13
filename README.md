@@ -1,6 +1,6 @@
 # indexio
 
-Lightweight semantic indexing and retrieval for project knowledge sources.
+Lightweight semantic indexing and retrieval for project knowledge sources for prompt and context engineering.
 
 Indexes document sources (markdown, code, etc.) into a ChromaDB vector store and provides semantic search. Standalone library — no knowledge of projio or other ecosystem packages.
 
