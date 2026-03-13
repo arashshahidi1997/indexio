@@ -28,6 +28,8 @@ nav:
       - Run The Chat Server: how-to/chat.md
   - Explanation:
       - explanation/index.md
+      - Ecosystem Links: explanation/ecosystem-links.md
+      - Project Status: explanation/status.md
       - Architecture: explanation/architecture.md
       - Role In The Projio Ecosystem: explanation/ecosystem.md
   - Logs:
