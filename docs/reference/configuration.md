@@ -74,6 +74,40 @@ Each source must define exactly one of `path` or `glob`.
 | `glob` | str | one of | Glob pattern relative to project root |
 | `path` | str | one of | Single file path relative to project root |
 | `exclude` | list[str] | no | Glob patterns to exclude (applied to relative paths) |
+| `chunker` | str | no | Chunking backend: `text` (default), `ast`, or `code` |
+| `chunker_options` | dict | no | Backend-specific options (see below) |
+
+### Chunker backends
+
+**`text`** (default) — Character-based `RecursiveCharacterTextSplitter`. Uses `chunk_size_chars` and `chunk_overlap_chars` from the top-level config.
+
+**`ast`** — Python stdlib `ast` module. Splits Python files by function/class. Falls back to `text` for non-Python files or on parse errors. Zero extra dependencies.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `include_docstrings` | bool | `true` | Include docstrings in chunks |
+| `max_chunk_chars` | int | `3000` | Symbols larger than this are sub-split with text chunker |
+
+**`code`** — Tree-sitter structural chunking. Supports Python, JavaScript, TypeScript, Go, Rust, Java, C/C++, Ruby. Requires `pip install indexio[code]`. Falls back to `ast` (Python) or `text` (other languages) when tree-sitter is not installed.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `max_chunk_chars` | int | `3000` | Symbols larger than this are sub-split |
+| `languages` | list[str] | all | Restrict to specific languages |
+
+Code-aware chunkers enrich chunk metadata with: `symbol_name`, `symbol_type` (function/class/method/module), `language`, `start_line`, `end_line`.
+
+Example:
+
+```yaml
+sources:
+  - id: code
+    corpus: code
+    glob: "src/**/*.py"
+    chunker: ast
+    chunker_options:
+      max_chunk_chars: 5000
+```
 
 ## Config composition
 
