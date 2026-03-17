@@ -31,6 +31,32 @@ def _split_docs(docs: list, chunk_size: int, chunk_overlap: int) -> list:
     return splitter.split_documents(docs)
 
 
+def _split_docs_chunker(
+    docs: list,
+    config: IndexioConfig,
+    src: SourceConfig,
+) -> list:
+    """Split documents using the source's configured chunker backend."""
+    from .chunkers import get_chunker
+
+    chunker = get_chunker(
+        src.chunker,
+        chunk_size=config.chunk_size_chars,
+        chunk_overlap=config.chunk_overlap_chars,
+        options=src.chunker_options,
+    )
+    all_chunks: list = []
+    for doc in docs:
+        source_path = doc.metadata.get("source_path", "")
+        chunks = chunker.chunk(
+            doc.page_content,
+            doc.metadata,
+            source_path=source_path,
+        )
+        all_chunks.extend(chunks)
+    return all_chunks
+
+
 def _source_paths(config: IndexioConfig, src: SourceConfig) -> list[Path]:
     if src.path:
         abs_path = config.root / src.path
@@ -192,7 +218,12 @@ def _process_source(
         f"[BUILD] Source '{src.id}': loaded {stats['files']} files, {stats['chars']} chars",
     )
 
-    chunks = _split_docs(docs, config.chunk_size_chars, config.chunk_overlap_chars)
+    if src.chunker:
+        chunks = _split_docs_chunker(docs, config, src)
+    else:
+        chunks = _split_docs(
+            docs, config.chunk_size_chars, config.chunk_overlap_chars
+        )
     t2 = time.perf_counter()
     counters: dict[str, int] = {}
     for chunk in chunks:

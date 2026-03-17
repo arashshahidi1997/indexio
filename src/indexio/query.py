@@ -39,13 +39,37 @@ def get_vectorstore(
 def _doc_to_result(doc: Any) -> dict[str, Any]:
     meta = doc.metadata or {}
     snippet = doc.page_content.strip().replace("\n", " ")
-    return {
+    result: dict[str, Any] = {
         "corpus": meta.get("corpus"),
         "source_id": meta.get("source_id"),
         "source_path": meta.get("source_path"),
         "chunk_index": meta.get("chunk_index"),
         "snippet": snippet[:400],
     }
+    # Include code-aware metadata when present
+    for key in (
+        "symbol_name", "symbol_type", "language", "start_line", "end_line",
+    ):
+        if key in meta:
+            result[key] = meta[key]
+    return result
+
+
+def _build_filter(
+    corpus: str | None = None,
+    symbol_type: str | None = None,
+) -> dict[str, Any] | None:
+    """Build a ChromaDB where-filter from optional constraints."""
+    conditions: list[dict[str, Any]] = []
+    if corpus:
+        conditions.append({"corpus": corpus})
+    if symbol_type:
+        conditions.append({"symbol_type": symbol_type})
+    if not conditions:
+        return None
+    if len(conditions) == 1:
+        return conditions[0]
+    return {"$and": conditions}
 
 
 def query_index(
@@ -56,6 +80,7 @@ def query_index(
     store: str | None = None,
     prefer_canonical: bool = False,
     corpus: str | None = None,
+    symbol_type: str | None = None,
     k: int = 4,
 ) -> dict[str, Any]:
     config, store_cfg, db = get_vectorstore(
@@ -64,8 +89,9 @@ def query_index(
         store=store,
         prefer_canonical=prefer_canonical,
     )
-    if corpus:
-        docs = db.similarity_search(query, k=k, filter={"corpus": corpus})
+    where = _build_filter(corpus=corpus, symbol_type=symbol_type)
+    if where:
+        docs = db.similarity_search(query, k=k, filter=where)
     else:
         docs = db.similarity_search(query, k=k)
     return {
@@ -74,6 +100,7 @@ def query_index(
         "store": store_cfg.name,
         "persist_directory": str(store_cfg.persist_directory),
         "corpus": corpus,
+        "symbol_type": symbol_type,
         "k": k,
         "results": [_doc_to_result(doc) for doc in docs],
     }
@@ -87,6 +114,7 @@ def query_index_multi(
     store: str | None = None,
     prefer_canonical: bool = False,
     corpus: str | None = None,
+    symbol_type: str | None = None,
     k: int = 4,
 ) -> dict[str, Any]:
     seen: set[tuple[Any, Any]] = set()
@@ -100,6 +128,7 @@ def query_index_multi(
             store=store,
             prefer_canonical=prefer_canonical,
             corpus=corpus,
+            symbol_type=symbol_type,
             k=k,
         )
         last_meta = payload
@@ -111,10 +140,17 @@ def query_index_multi(
             merged.append(result)
     return {
         "queries": queries,
-        "config_path": None if last_meta is None else last_meta["config_path"],
-        "store": None if last_meta is None else last_meta["store"],
-        "persist_directory": None if last_meta is None else last_meta["persist_directory"],
+        "config_path": (
+            None if last_meta is None else last_meta["config_path"]
+        ),
+        "store": (
+            None if last_meta is None else last_meta["store"]
+        ),
+        "persist_directory": (
+            None if last_meta is None else last_meta["persist_directory"]
+        ),
         "corpus": corpus,
+        "symbol_type": symbol_type,
         "k": k,
         "results": merged,
     }

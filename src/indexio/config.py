@@ -31,6 +31,8 @@ class SourceConfig:
     path: str | None = None
     glob: str | None = None
     exclude: tuple[str, ...] = ()
+    chunker: str | None = None
+    chunker_options: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -202,12 +204,21 @@ def load_indexio_config(config_path: str | Path, root: str | Path) -> IndexioCon
     for raw_src in payload.get("sources", []) or []:
         if not isinstance(raw_src, dict):
             raise TypeError("Each source must be a mapping")
+        raw_chunker_opts = raw_src.get("chunker_options")
         src = SourceConfig(
             id=str(raw_src["id"]),
             corpus=str(raw_src["corpus"]),
             path=str(raw_src["path"]) if "path" in raw_src else None,
             glob=str(raw_src["glob"]) if "glob" in raw_src else None,
-            exclude=tuple(str(item) for item in raw_src.get("exclude", []) or []),
+            exclude=tuple(
+                str(item) for item in raw_src.get("exclude", []) or []
+            ),
+            chunker=str(raw_src["chunker"]) if "chunker" in raw_src else None,
+            chunker_options=(
+                dict(raw_chunker_opts)
+                if isinstance(raw_chunker_opts, dict)
+                else None
+            ),
         )
         if bool(src.path) == bool(src.glob):
             raise ValueError(f"Source '{src.id}' must define exactly one of path or glob")
