@@ -8,15 +8,15 @@ version = "0.1.0"
 description = "Lightweight semantic indexing and retrieval for project knowledge sources"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "Arash" }]
-license = { text = "MIT" }
+authors = [{ name = "Arash Shahidi" }]
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["rag", "embeddings", "chromadb", "semantic-search", "indexing"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Information Analysis",
@@ -40,6 +40,11 @@ chat = [
     "pydantic-settings>=2.2",
 ]
 dev = ["pytest", "twine", "build", "mkdocs>=1.6", "mkdocs-material>=9.5"]
+
+[project.urls]
+Homepage = "https://github.com/arashshahidi1997/indexio"
+Repository = "https://github.com/arashshahidi1997/indexio"
+Issues = "https://github.com/arashshahidi1997/indexio/issues"
 
 [project.scripts]
 indexio = "indexio.cli:main"
