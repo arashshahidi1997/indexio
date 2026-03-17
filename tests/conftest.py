@@ -40,7 +40,7 @@ def sample_project(tmp_path: Path) -> Path:
 @pytest.fixture()
 def sample_config_yaml(sample_project: Path) -> Path:
     """Write a minimal indexio config YAML and return its path."""
-    config_dir = sample_project / ".indexio"
+    config_dir = sample_project / ".projio" / "indexio"
     config_dir.mkdir(parents=True)
     config_file = config_dir / "config.yaml"
     config_file.write_text(
@@ -73,7 +73,7 @@ sources:
 @pytest.fixture()
 def include_configs(sample_project: Path) -> tuple[Path, Path]:
     """Write a base config and an overlay that includes it."""
-    config_dir = sample_project / ".indexio"
+    config_dir = sample_project / ".projio" / "indexio"
     config_dir.mkdir(parents=True, exist_ok=True)
 
     base = config_dir / "base.yaml"

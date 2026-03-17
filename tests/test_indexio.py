@@ -43,7 +43,7 @@ def test_load_basic_config(sample_config_yaml: Path, sample_project: Path) -> No
 
 
 def test_load_config_relative_path(sample_config_yaml: Path, sample_project: Path) -> None:
-    cfg = load_indexio_config(".indexio/config.yaml", root=sample_project)
+    cfg = load_indexio_config(".projio/indexio/config.yaml", root=sample_project)
     assert cfg.config_path == sample_config_yaml.resolve()
 
 
@@ -450,7 +450,7 @@ def test_build_index_full_rebuild_clears_before_opening_db(
 
     cfg = IndexioConfig(
         root=tmp_path,
-        config_path=tmp_path / ".indexio" / "config.yaml",
+        config_path=tmp_path / ".projio" / "indexio" / "config.yaml",
         embedding_model="fake-model",
         chunk_size_chars=100,
         chunk_overlap_chars=10,
@@ -481,7 +481,7 @@ def test_build_index_full_rebuild_clears_before_opening_db(
     )
     monkeypatch.setitem(sys.modules, "langchain_chroma", SimpleNamespace(Chroma=FakeChroma))
 
-    payload = build_mod.build_index(config_path=".indexio/config.yaml", root=tmp_path, verbose=False)
+    payload = build_mod.build_index(config_path=".projio/indexio/config.yaml", root=tmp_path, verbose=False)
     assert payload["partial"] is False
     assert events == ["open_db", "process_docs"]
     assert persist_directory.exists()
@@ -551,7 +551,7 @@ def test_cli_init_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> 
     cli_main(["init", "--root", str(tmp_path)])
     out = capsys.readouterr().out
     assert "[OK]" in out
-    generated = tmp_path / ".indexio" / "config.yaml"
+    generated = tmp_path / ".projio" / "indexio" / "config.yaml"
     assert generated.exists()
     payload = yaml.safe_load(generated.read_text(encoding="utf-8"))
     assert "stores" in payload
@@ -560,7 +560,7 @@ def test_cli_init_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> 
 def test_cli_init_config_skip_existing(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    output = tmp_path / ".indexio" / "config.yaml"
+    output = tmp_path / ".projio" / "indexio" / "config.yaml"
     output.parent.mkdir(parents=True)
     output.write_text("existing: true\n", encoding="utf-8")
     cli_main(["init", "--root", str(tmp_path)])
@@ -571,7 +571,7 @@ def test_cli_init_config_skip_existing(
 
 
 def test_cli_init_config_force(tmp_path: Path) -> None:
-    output = tmp_path / ".indexio" / "config.yaml"
+    output = tmp_path / ".projio" / "indexio" / "config.yaml"
     output.parent.mkdir(parents=True)
     output.write_text("old: true\n", encoding="utf-8")
     cli_main(["init", "--root", str(tmp_path), "--force"])
@@ -603,7 +603,7 @@ def test_cli_status_uses_default_root_and_config(
     monkeypatch.chdir(sample_project)
     cli_main(["status"])
     out = capsys.readouterr().out
-    assert ".indexio/config.yaml" in out
+    assert ".projio/indexio/config.yaml" in out
     assert "On store 'local'" in out
 
 
@@ -657,7 +657,7 @@ def test_cli_build_prints_completion_and_passes_verbose(
     out = capsys.readouterr().out
     assert "[BUILD] Complete" in out
     assert "[INFO] Index build complete." in out
-    assert called["config_path"] == ".indexio/config.yaml"
+    assert called["config_path"] == ".projio/indexio/config.yaml"
     assert called["root"] == "."
     assert called["verbose"] is True
 
