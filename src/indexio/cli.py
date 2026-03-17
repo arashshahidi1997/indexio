@@ -127,14 +127,12 @@ def main(argv: Iterable[str] | None = None) -> None:
     args = _build_parser().parse_args(list(argv) if argv is not None else None)
 
     if args.command == "init":
-        root = Path(args.root).expanduser().resolve()
-        output = (root / args.output).resolve()
-        if output.exists() and not args.force:
-            print(f"[SKIP] Config already exists: {output}  (use --force to overwrite)")
-            return
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(default_config_template(), encoding="utf-8")
-        print(f"[OK] Wrote indexio config: {output}")
+        from .config import scaffold_config
+        written = scaffold_config(args.output, root=args.root, force=args.force)
+        if written is None:
+            print(f"[SKIP] Config already exists: {Path(args.root).expanduser().resolve() / args.output}  (use --force to overwrite)")
+        else:
+            print(f"[OK] Wrote indexio config: {written}")
         return
 
     if args.command == "build":

@@ -76,6 +76,24 @@ sources:
 """
 
 
+def scaffold_config(
+    output: str | Path,
+    *,
+    root: str | Path = ".",
+    force: bool = False,
+) -> Path | None:
+    """Write a starter indexio config file.  Return the path written, or None if skipped."""
+    root_path = Path(root).expanduser().resolve()
+    out_path = Path(output)
+    if not out_path.is_absolute():
+        out_path = root_path / out_path
+    if out_path.exists() and not force:
+        return None
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(default_config_template(), encoding="utf-8")
+    return out_path
+
+
 def _load_yaml_mapping(path: Path) -> dict[str, Any]:
     payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     if not isinstance(payload, dict):
