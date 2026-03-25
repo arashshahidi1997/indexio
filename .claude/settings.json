@@ -1,0 +1,14 @@
+{
+  "allowedTools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "Bash(git:*)",
+    "Bash(python:*)",
+    "Bash(pip:*)",
+    "Bash(pytest:*)",
+    "Bash(make:*)"
+  ]
+}
