@@ -339,7 +339,7 @@ def build_project_graph(
             source = abs_path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
-        rel = str(abs_path.relative_to(root))
+        rel = str(abs_path.relative_to(root)) if abs_path.is_relative_to(root) else str(abs_path)
         module_name = (
             rel.replace("/", ".").replace("\\", ".").removesuffix(".py")
         )

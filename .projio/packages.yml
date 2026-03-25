@@ -11,3 +11,9 @@ packages:
   indexio:
     enabled: true
     path: .projio/indexio
+  claude:
+    enabled: true
+    path: .projio/claude
+  pipeio:
+    enabled: true
+    path: .projio/pipeio

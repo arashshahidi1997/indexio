@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -10,9 +11,10 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import StreamingResponse
 
 from .models import ChatRequest, ChatResponse, SourceRef
-from .pipeline import rag_pipeline
+from .pipeline import rag_pipeline, rag_pipeline_stream
 from .settings import ChatSettings, get_settings
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -65,6 +67,8 @@ def _chatbot_page(settings: ChatSettings) -> str:
     <script>
       window.INDEXIO_CHAT = {{
         apiUrl: "/chat/",
+        streamUrl: "/chat/stream",
+        statusUrl: "/status",
         title: "{title}",
       }};
     </script>
@@ -81,6 +85,10 @@ def _chatbot_page(settings: ChatSettings) -> str:
   </body>
 </html>
 """
+
+
+# Vector store status: "loading" → "ready" | "error"
+_vs_status: dict[str, str] = {"state": "loading", "detail": ""}
 
 
 @asynccontextmanager
@@ -102,8 +110,12 @@ async def lifespan(app: FastAPI):
                 prefer_canonical=True,
             ),
         )
+        _vs_status["state"] = "ready"
+        _vs_status["detail"] = ""
         print("[indexio-chat] Vector store ready.")
     except Exception as exc:
+        _vs_status["state"] = "error"
+        _vs_status["detail"] = str(exc)
         print(f"[indexio-chat] WARNING: warmup failed: {exc}")
 
     yield
@@ -137,6 +149,10 @@ def create_app(settings: ChatSettings | None = None) -> FastAPI:
     async def health():
         return {"status": "ok"}
 
+    @app.get("/status")
+    async def status():
+        return {"vectorstore": _vs_status["state"], "detail": _vs_status["detail"]}
+
     @app.get("/", response_class=HTMLResponse)
     async def index():
         return HTMLResponse(_chatbot_page(settings))
@@ -153,14 +169,51 @@ def create_app(settings: ChatSettings | None = None) -> FastAPI:
                 root=settings.root,
                 store=settings.store,
                 corpus=settings.corpus,
-                k=settings.k,
+                k=body.k if body.k is not None else settings.k,
                 llm_backend=settings.llm_backend,
                 llm_model=settings.llm_model,
                 llm_base_url=settings.llm_base_url,
                 llm_api_key=settings.llm_api_key,
+                site_url=settings.site_url,
+                use_llm=body.use_llm,
             ),
         )
         return ChatResponse(answer=answer, sources=sources)
+
+    @app.post("/chat/stream")
+    async def chat_stream(body: ChatRequest):
+        """SSE streaming endpoint: sources first, then LLM tokens."""
+        loop = asyncio.get_running_loop()
+
+        async def event_generator():
+            gen = rag_pipeline_stream(
+                body.message,
+                config_path=settings.config_path,
+                root=settings.root,
+                store=settings.store,
+                corpus=settings.corpus,
+                k=body.k if body.k is not None else settings.k,
+                llm_backend=settings.llm_backend,
+                llm_model=settings.llm_model,
+                llm_base_url=settings.llm_base_url,
+                llm_api_key=settings.llm_api_key,
+                site_url=settings.site_url,
+                use_llm=body.use_llm,
+            )
+            # Pull events from the synchronous generator in a thread
+            while True:
+                try:
+                    evt = await loop.run_in_executor(None, next, gen)
+                except StopIteration:
+                    break
+                line = f"event: {evt['event']}\ndata: {json.dumps(evt['data'])}\n\n"
+                yield line
+
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
 
     # ── Serve the chatbot widget static files ────────────────────
 

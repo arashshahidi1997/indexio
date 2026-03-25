@@ -119,6 +119,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--llm-model", default="llama3", help="LLM model name (default: llama3).")
     p_serve.add_argument("--llm-base-url", default="http://localhost:11434", help="LLM API base URL.")
     p_serve.add_argument("--title", default="Docs Assistant", help="Chat widget title.")
+    p_serve.add_argument("--site-url", default=None, help="Base URL of the docs site, used to make source paths clickable.")
 
     return parser
 
@@ -250,6 +251,7 @@ def main(argv: Iterable[str] | None = None) -> None:
             llm_model=args.llm_model,
             llm_base_url=args.llm_base_url,
             title=args.title,
+            site_url=args.site_url,
         )
         resolved_port, changed = _resolve_bind_port(settings.host, settings.port)
         if changed:

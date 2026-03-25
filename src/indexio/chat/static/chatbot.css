@@ -50,6 +50,12 @@
   justify-content: space-between;
 }
 
+.chatbot-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .chatbot-title {
   font-weight: 600;
 }
@@ -59,6 +65,90 @@
   gap: 0.5rem;
   align-items: center;
 }
+
+/* ── Status indicator ────────────────────────────────────── */
+
+.chatbot-status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.chatbot-status-loading {
+  background: #f5c542;
+  animation: chatbot-pulse 1.2s ease-in-out infinite;
+}
+
+.chatbot-status-ready {
+  background: #4caf50;
+}
+
+.chatbot-status-error {
+  background: #e53935;
+}
+
+@keyframes chatbot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Top-k dropdown ──────────────────────────────────────── */
+
+.chatbot-k-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.chatbot-k-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.chatbot-k-select {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  padding: 1px 2px;
+  cursor: pointer;
+}
+
+.chatbot-k-select option {
+  background: #1f2a44;
+  color: #fff;
+}
+
+/* ── LLM toggle ──────────────────────────────────────────── */
+
+.chatbot-llm-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chatbot-llm-toggle input[type="checkbox"] {
+  accent-color: #4caf50;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.chatbot-llm-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
 
 .chatbot-close,
 .chatbot-clear {
@@ -79,6 +169,8 @@
 .chatbot-close {
   font-size: 1.2rem;
 }
+
+/* ── Messages ────────────────────────────────────────────── */
 
 .chatbot-messages {
   flex: 1;
@@ -105,6 +197,15 @@
   background: #ffffff;
   border: 1px solid #e1e4ef;
   color: #111;
+}
+
+.chatbot-phase {
+  background: transparent;
+  color: #666;
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 0.3rem 0.75rem;
+  animation: chatbot-pulse 1.2s ease-in-out infinite;
 }
 
 /* Allow markdown elements to render naturally inside bot messages */
@@ -142,6 +243,8 @@
   color: #2f4b7c;
   text-decoration: underline;
 }
+
+/* ── Form ────────────────────────────────────────────────── */
 
 .chatbot-form {
   display: flex;

@@ -9,6 +9,8 @@ class ChatRequest(BaseModel):
     """Incoming chat message."""
 
     message: str
+    use_llm: bool = True
+    k: int | None = None
 
 
 class SourceRef(BaseModel):
@@ -19,6 +21,7 @@ class SourceRef(BaseModel):
     source_path: str | None = None
     chunk_index: int | None = None
     snippet: str | None = None
+    url: str | None = None
 
 
 class ChatResponse(BaseModel):

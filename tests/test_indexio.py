@@ -419,6 +419,37 @@ sources:
     assert paths == []
 
 
+def test_source_paths_absolute_glob(tmp_path: Path) -> None:
+    from indexio.build import _source_paths
+
+    ext_dir = tmp_path / "external" / "lib"
+    ext_dir.mkdir(parents=True)
+    (ext_dir / "util.py").write_text("# util", encoding="utf-8")
+    (ext_dir / "helper.py").write_text("# helper", encoding="utf-8")
+    (ext_dir / "readme.txt").write_text("ignore", encoding="utf-8")
+
+    project = tmp_path / "proj"
+    project.mkdir()
+    cfg_file = project / "cfg.yaml"
+    abs_glob = str(ext_dir / "**/*.py")
+    cfg_file.write_text(
+        f"""\
+stores:
+  local:
+    persist_directory: db
+sources:
+  - id: ext
+    corpus: ext
+    glob: "{abs_glob}"
+""",
+        encoding="utf-8",
+    )
+    cfg = load_indexio_config(cfg_file, root=project)
+    paths = _source_paths(cfg, cfg.sources[0])
+    names = {p.name for p in paths}
+    assert names == {"util.py", "helper.py"}
+
+
 # ---- build: document construction -------------------------------------------
 
 def test_build_documents(sample_config_yaml: Path, sample_project: Path) -> None:

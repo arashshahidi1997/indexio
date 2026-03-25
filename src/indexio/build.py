@@ -5,7 +5,7 @@ import json
 import shutil
 import time
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .config import IndexioConfig, SourceConfig, load_indexio_config, resolve_store
@@ -63,11 +63,20 @@ def _source_paths(config: IndexioConfig, src: SourceConfig) -> list[Path]:
         return [abs_path] if abs_path.exists() else []
 
     assert src.glob is not None
+    glob_pattern = PurePosixPath(src.glob)
+    if glob_pattern.is_absolute():
+        base = Path(glob_pattern.anchor)
+        rel_pattern = str(glob_pattern.relative_to(glob_pattern.anchor))
+        matched = base.glob(rel_pattern)
+    else:
+        base = config.root
+        matched = config.root.glob(src.glob)
+
     paths: list[Path] = []
-    for path in config.root.glob(src.glob):
+    for path in matched:
         if not path.is_file():
             continue
-        rel = path.relative_to(config.root)
+        rel = path.relative_to(base)
         if any(rel.match(pattern) for pattern in src.exclude):
             continue
         paths.append(path)
@@ -121,7 +130,10 @@ def load_status_manifest(persist_directory: Path) -> dict[str, Any] | None:
 
 def source_snapshot(config: IndexioConfig, src: SourceConfig) -> dict[str, Any]:
     paths = _source_paths(config, src)
-    matched_paths = [str(path.relative_to(config.root)) for path in paths]
+    matched_paths = [
+        str(path.relative_to(config.root)) if path.is_relative_to(config.root) else str(path)
+        for path in paths
+    ]
     file_state = {
         rel_path: {
             "mtime_ns": path.stat().st_mtime_ns,
@@ -190,7 +202,7 @@ def _build_documents(config: IndexioConfig, src: SourceConfig) -> tuple[list, di
                 metadata={
                     "source_id": src.id,
                     "corpus": src.corpus,
-                    "source_path": str(path.relative_to(config.root)),
+                    "source_path": str(path.relative_to(config.root)) if path.is_relative_to(config.root) else str(path),
                 },
             )
         )

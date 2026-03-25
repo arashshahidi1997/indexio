@@ -39,6 +39,7 @@ class ChatSettings(BaseSettings):
 
     # Widget
     title: str = "Docs Assistant"
+    site_url: str | None = None
 
     model_config = SettingsConfigDict(
         env_prefix="INDEXIO_CHAT_",
