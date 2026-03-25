@@ -8,4 +8,5 @@
 - [Issue](issue/index.md)
 - [Meeting](meeting/index.md)
 - [Personal](personal/index.md)
+- [Task](task/index.md)
 - [Weekly](weekly/index.md)
