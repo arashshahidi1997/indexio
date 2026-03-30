@@ -81,6 +81,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_build.add_argument("--root", default=".", help="Project root for resolving relative paths.")
     p_build.add_argument("--store", help="Named store from the config.")
     p_build.add_argument("--sources", help="Comma-separated source ids for partial rebuild.")
+    p_build.add_argument(
+        "--update",
+        action="store_true",
+        help="Incremental build: only rebuild sources that are new or changed since the last build.",
+    )
     p_build.add_argument("--json", action="store_true", help="Print JSON summary.")
 
     p_query = sub.add_parser("query", help="Query the Chroma index.")
@@ -140,6 +145,38 @@ def main(argv: Iterable[str] | None = None) -> None:
         sources_filter = None
         if args.sources:
             sources_filter = [part.strip() for part in args.sources.split(",") if part.strip()]
+        if args.update and not sources_filter:
+            from .config import load_indexio_config, resolve_store
+            config = load_indexio_config(args.config, root=args.root)
+            try:
+                store_cfg = resolve_store(config, store=args.store, must_exist=False)
+            except Exception:
+                store_cfg = None
+            manifest = build_mod.load_status_manifest(store_cfg.persist_directory) if store_cfg else None
+            if manifest is None:
+                sources_filter = None  # full rebuild — no manifest to compare against
+            else:
+                manifest_sources = dict(manifest.get("sources", {}))
+                needs_build: list[str] = []
+                for src in config.sources:
+                    previous = manifest_sources.get(src.id)
+                    if previous is None:
+                        needs_build.append(src.id)
+                        continue
+                    snapshot = build_mod.source_snapshot(config, src)
+                    if (
+                        previous.get("matched_paths") != snapshot["matched_paths"]
+                        or previous.get("file_state") != snapshot["file_state"]
+                    ):
+                        needs_build.append(src.id)
+                if not needs_build:
+                    if not args.json:
+                        print("[INFO] All sources are up to date — nothing to rebuild.")
+                    else:
+                        import json as _json
+                        print(_json.dumps({"status": "up_to_date", "message": "All sources are up to date — nothing to rebuild."}, indent=2))
+                    return
+                sources_filter = needs_build
         payload = build_mod.build_index(
             config_path=args.config,
             root=args.root,

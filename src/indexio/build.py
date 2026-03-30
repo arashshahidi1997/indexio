@@ -6,9 +6,12 @@ import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, Callable
 
 from .config import IndexioConfig, SourceConfig, load_indexio_config, resolve_store
+
+# Signature: (source_id, source_index, total_sources, source_stats_or_none)
+ProgressCallback = Callable[[str, int, int, dict[str, int] | None], None]
 
 BATCH_SIZE = 100
 STATUS_MANIFEST = "indexio.status.json"
@@ -276,7 +279,16 @@ def build_index(
     store: str | None = None,
     sources_filter: list[str] | None = None,
     verbose: bool = True,
+    on_progress: ProgressCallback | None = None,
 ) -> dict[str, Any]:
+    """Build (or rebuild) the search index.
+
+    Args:
+        on_progress: Optional callback fired per source.
+            Signature: ``(source_id, source_index, total_sources, stats_or_none)``.
+            Called with ``stats=None`` before processing starts, and with the
+            stats dict after each source completes.
+    """
     from langchain_chroma import Chroma
 
     _progress(verbose, f"[BUILD] Loading config: {config_path} (root={root})")
@@ -310,8 +322,11 @@ def build_index(
         for src in selected_sources:
             db._collection.delete(where={"source_id": src.id})
 
+    total = len(selected_sources)
     summary: dict[str, dict[str, int]] = {}
-    for src in selected_sources:
+    for idx, src in enumerate(selected_sources):
+        if on_progress:
+            on_progress(src.id, idx, total, None)
         summary[src.id] = _process_source(
             config,
             src,
@@ -319,6 +334,8 @@ def build_index(
             use_upsert=partial,
             verbose=verbose,
         )
+        if on_progress:
+            on_progress(src.id, idx, total, summary[src.id])
 
     total_files = sum(item["files"] for item in summary.values())
     total_chunks = sum(item["chunks"] for item in summary.values())
