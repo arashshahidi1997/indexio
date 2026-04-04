@@ -60,29 +60,58 @@ def _split_docs_chunker(
     return all_chunks
 
 
+def _expand_braces(pattern: str) -> list[str]:
+    """Expand brace patterns like ``**/*.{py,md}`` into multiple globs.
+
+    Python's ``Path.glob`` does not support brace expansion, so we expand
+    them into separate patterns: ``["**/*.py", "**/*.md"]``.
+    Patterns without braces are returned as-is.
+    """
+    import re
+    m = re.search(r'\{([^}]+)\}', pattern)
+    if not m:
+        return [pattern]
+    prefix = pattern[:m.start()]
+    suffix = pattern[m.end():]
+    alternatives = [alt.strip() for alt in m.group(1).split(",")]
+    expanded: list[str] = []
+    for alt in alternatives:
+        expanded.extend(_expand_braces(f"{prefix}{alt}{suffix}"))
+    return expanded
+
+
 def _source_paths(config: IndexioConfig, src: SourceConfig) -> list[Path]:
     if src.path:
         abs_path = config.root / src.path
         return [abs_path] if abs_path.exists() else []
 
     assert src.glob is not None
-    glob_pattern = PurePosixPath(src.glob)
-    if glob_pattern.is_absolute():
-        base = Path(glob_pattern.anchor)
-        rel_pattern = str(glob_pattern.relative_to(glob_pattern.anchor))
-        matched = base.glob(rel_pattern)
-    else:
-        base = config.root
-        matched = config.root.glob(src.glob)
 
+    # Expand brace patterns (e.g. **/*.{py,md} → **/*.py + **/*.md)
+    glob_patterns = _expand_braces(src.glob)
+
+    seen: set[Path] = set()
     paths: list[Path] = []
-    for path in matched:
-        if not path.is_file():
-            continue
-        rel = path.relative_to(base)
-        if any(rel.match(pattern) for pattern in src.exclude):
-            continue
-        paths.append(path)
+    for gp in glob_patterns:
+        glob_pattern = PurePosixPath(gp)
+        if glob_pattern.is_absolute():
+            base = Path(glob_pattern.anchor)
+            rel_pattern = str(glob_pattern.relative_to(glob_pattern.anchor))
+            matched = base.glob(rel_pattern)
+        else:
+            base = config.root
+            matched = config.root.glob(gp)
+
+        for path in matched:
+            if not path.is_file():
+                continue
+            if path in seen:
+                continue
+            rel = path.relative_to(base)
+            if any(rel.match(pattern) for pattern in src.exclude):
+                continue
+            seen.add(path)
+            paths.append(path)
     return paths
 
 
