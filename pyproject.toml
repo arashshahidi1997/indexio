@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "indexio"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lightweight semantic indexing and retrieval for project knowledge sources"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "Arash Shahidi" }]
+authors = [{ name = "Arash Shahidi", email = "A.Shahidi@campus.lmu.de" }]
 license = "MIT"
 license-files = ["LICENSE"]
 keywords = ["rag", "embeddings", "chromadb", "semantic-search", "indexing"]
@@ -19,6 +19,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Text Processing :: Indexing",
 ]
@@ -43,6 +44,7 @@ dev = ["pytest", "twine", "build", "mkdocs>=1.6", "mkdocs-material>=9.5"]
 
 [project.urls]
 Homepage = "https://github.com/arashshahidi1997/indexio"
+Documentation = "https://arashshahidi1997.github.io/indexio/"
 Repository = "https://github.com/arashshahidi1997/indexio"
 Issues = "https://github.com/arashshahidi1997/indexio/issues"
 
