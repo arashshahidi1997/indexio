@@ -214,9 +214,26 @@ def test_ast_chunker_subsplits_large_symbols() -> None:
 
 # ---- CodeChunker (tree-sitter) ---------------------------------------------
 
-def test_code_chunker_falls_back_without_tree_sitter() -> None:
+def test_code_chunker_uses_tree_sitter() -> None:
+    """With tree-sitter installed (indexio[code]), symbols come from the parser."""
+    pytest.importorskip("langchain_core")
+    pytest.importorskip("tree_sitter", reason="needs indexio[code]")
+    pytest.importorskip("tree_sitter_python", reason="needs indexio[code]")
+    chunker = CodeChunker(chunk_size=200, chunk_overlap=20)
+    chunks = chunker.chunk(
+        SAMPLE_PYTHON,
+        {"source_id": "test", "corpus": "code"},
+        source_path="src/utils.py",
+    )
+    symbol_names = [c.metadata.get("symbol_name") for c in chunks]
+    assert any("greet" in (n or "") for n in symbol_names)
+
+
+def test_code_chunker_falls_back_without_tree_sitter(monkeypatch) -> None:
     """When tree-sitter is not installed, CodeChunker falls back to ast."""
     pytest.importorskip("langchain_core")
+    import sys
+    monkeypatch.setitem(sys.modules, "tree_sitter", None)
     chunker = CodeChunker(chunk_size=200, chunk_overlap=20)
     chunks = chunker.chunk(
         SAMPLE_PYTHON,

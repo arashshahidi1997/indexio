@@ -242,8 +242,11 @@ def _get_tree_sitter_language(lang: str):
     """Lazily import and return a tree-sitter Language for *lang*."""
     try:
         import importlib
+        import tree_sitter
         mod = importlib.import_module(f"tree_sitter_{lang}")
-        return mod.language()
+        # Grammar packages return a PyCapsule; tree-sitter >= 0.22 needs it
+        # wrapped in a Language before a Parser accepts it.
+        return tree_sitter.Language(mod.language())
     except (ImportError, AttributeError) as exc:
         raise ImportError(
             f"tree-sitter grammar for '{lang}' not installed. "
