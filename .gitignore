@@ -33,4 +33,5 @@ docs/deliverables/reports/*/_files/
 docs/deliverables/reports/*/_freeze/
 docs/pipelines/mkdocs.yml
 site/
+/inbox/
 # <<< projio <<<
